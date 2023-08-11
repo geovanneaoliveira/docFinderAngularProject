@@ -1,0 +1,68 @@
+<form [formGroup]="documentoForm">
+
+    <label for="filterByDate">Filtro de data</label>
+    <input type="checkbox" name="filterByDate" id="filterByDate" (input)="enableFilterByDate($event)">
+
+    <select name="dateFilterOptions" id="dateFilterOptions" [disabled]="!filterByDate"
+        (change)="changeFilterOptions($event)">
+        <option value="De/Até">De/Até</option>
+        <option value="De">De</option>
+        <option value="Até">Até</option>
+    </select>
+    <div class="dateFilters" [hidden]="!filterByDate">
+
+        <label for="fromDate" [hidden]="typeofLimit==='Até'">De - </label>
+        <input type="date" name="fromDate" id="fromDate" formControlName="fromDateInput" [hidden]="typeofLimit==='Até'"
+            [(ngModel)]="fromDateDefaultValue">
+        <div *ngIf="f.fromDateInput.errors">Data Inválida</div>
+
+        <label for="toDate" [hidden]="typeofLimit==='De'">Até - </label>
+        <input type="date" name="toDate" id="toDate" formControlName="toDateInput" [hidden]="typeofLimit==='De'"
+            [(ngModel)]="toDateDefaultValue">
+    </div>
+
+    <label for="InputSearchString">Busca</label>
+    <input type="text" name="InputSearchString" id="InputSearchString" formControlName="searchStringInput">
+    <button type="submit" (click)="search()" [disabled]="!documentoForm.valid">Buscar</button>
+
+</form>
+
+<div [hidden]="!afterSearch">
+    <h2>Documentos encontrados</h2>
+    <div *ngIf="emptyResponse">
+        <h4>Nenhum documento foi encontrado!</h4>
+        <h5 (click)="searchByDidYouMean()" *ngIf="possibleOptionFound">Você quis dizer "{{possibleOption}}"?</h5>
+    </div>
+    <mat-list>
+        <h4 mat-subheader>Mais relevantes</h4>
+        <div *ngFor="let documento of documentos">
+            <mat-list-item *ngIf="scoreProximiy(documento.score)>=85">
+                <div matListItemTitle> {{documento.cnpj}} {{documento.termos}}</div>
+                <div matListItemLine>{{documento.data | date:'longDate'}}</div>
+                <button mat-button (click)="checkLink(documento.local)">Acessar</button>
+            </mat-list-item>
+        </div>
+        <mat-divider></mat-divider>
+        <h4 mat-subheader>Demais resultados</h4>
+        <div *ngFor="let documento of documentos">
+            <mat-list-item *ngIf="scoreProximiy(documento.score)<85">
+                <div matListItemTitle> {{documento.cnpj}} {{documento.termos}}</div>
+                <div matListItemLine>{{documento.data | date:'longDate'}}</div>
+                <button mat-button (click)="checkLink(documento.local)">Acessar</button>
+            </mat-list-item>
+        </div>
+        <!-- <div *ngFor="let documento of documentos">
+            <mat-list-item>
+                <span matListItemTitle
+                    [style]="scoreProximiy(documento.score)[0]">{{scoreProximiy(documento.score)[1]}}</span>
+                {{documento.cnpj}} {{documento.data | date:'dd/MM/yyyy'}} {{documento.termos}}
+                <button mat-button (click)="checkLink(documento.local)">Acessar</button>
+            </mat-list-item>
+        </div> -->
+    </mat-list>
+    <h4 [hidden]="!noMoreResults">Não há mais resultados</h4>
+</div>
+<div [hidden]="!afterSearch || emptyResponse">
+    <p>Busque mais resultados de {{this.searchString}}</p>
+    <button type="submit" (click)="searchAfter()">Buscar</button>
+</div>

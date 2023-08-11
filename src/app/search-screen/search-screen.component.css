@@ -1,0 +1,7 @@
+.flex-me 
+{   display: inline-flex; 
+  flex-flow: row wrap;    
+}
+mat-card{
+    width: fit-content;
+}
