@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Documento } from '../types/types.module';
 import { DocumentoService } from '../services/documento.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-search-material',
@@ -11,7 +11,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 export class SearchMaterialComponent {
 
   documentos: Documento[] = [];
-  pitId!: string;
+  pitId = '';
   documentoForm;
   filterByDate: boolean;
   typeofLimit = "De/Até";
@@ -20,6 +20,7 @@ export class SearchMaterialComponent {
   emptyResponse: boolean;
   noMoreResults: boolean;
   possibleOption: string;
+  hasLessRelevant = false;
   possibleOptionFound: boolean;
   toDateDefaultValue = new Date().toISOString().slice(0, 10);
   fromDateDefaultValue = this.decreaseOneYear(new Date()).toISOString().slice(0, 10);
@@ -37,7 +38,7 @@ export class SearchMaterialComponent {
     this.searchString = "";
     this.possibleOption = "";
     this.possibleOptionFound = false;
-    
+    console.log(this.fromDateDefaultValue)
     this.documentoForm = formBuilder.group({
       searchStringInput: ['', Validators.required],
       fromDateInput: [,],
@@ -53,7 +54,6 @@ export class SearchMaterialComponent {
     if (this.filterByDate) {
       this.documentoService.searchDateRange(this.searchString, 'Or', values.fromDateInput!, values.toDateInput!, this.typeofLimit).subscribe(documentos => {
         if (documentos === null) {
-          this.didYouMean(this.searchString);
           this.emptyResponse = true;
         } else {
           this.highestScore = documentos[0].score;
@@ -64,7 +64,6 @@ export class SearchMaterialComponent {
     } else {
       this.documentoService.search(this.searchString, 'Or').subscribe(documentos => {
         if (documentos === null) {
-          this.didYouMean(this.searchString);
           this.emptyResponse = true;
         } else {
           this.highestScore = documentos[0].score;
@@ -73,6 +72,7 @@ export class SearchMaterialComponent {
         }
       });
     }
+    this.didYouMean(this.searchString);
   }
 
   searchAfter() {
@@ -143,6 +143,7 @@ export class SearchMaterialComponent {
 
   resetParams() {
     this.possibleOptionFound = false;
+    this.hasLessRelevant = false;
     this.noMoreResults = false;
     this.documentos = [];
     this.emptyResponse = false;
@@ -163,28 +164,14 @@ export class SearchMaterialComponent {
   }
 
   scoreProximiy(score: number) {
-    return (score/this.highestScore)*100;
-    // let color;
-    // let result;
-    // switch(true) {
-    //   case proximity>=85:
-    //     color = "color: green;";
-    //     result = 'Próximo';
-    //     break;
-    //     case proximity>=49:
-    //     color = "color: yellow;";
-    //     result = 'Similar';
-    //     break;
-    //     case proximity<49:
-    //     color = "color: orange;";
-    //     result = 'Distante';
-    //     break;
-    // }
-    // return [color,result];
+    let proximity = (score/this.highestScore)*100;
+    if(proximity<85){
+      this.hasLessRelevant = true;
+    }
+    return proximity;
   }
-  // generatePit = () => {
-  //   this.documentoService.generatePitId().subscribe(id => {
-  //     this.pitId = id;
-  //   });
-  // }
+
+  ngOnDestroy() {
+    this.documentoService.deletePitId(this.pitId);
+  }
 }

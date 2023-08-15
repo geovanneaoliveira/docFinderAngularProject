@@ -1,65 +1,87 @@
-<form [formGroup]="documentoForm">
-    <mat-checkbox name="filterByDate" id="filterByDate" (input)="enableFilterByDate($event)">Filtrar por
-        data?</mat-checkbox>
-    <mat-form-field>
-        <mat-select name="dateFilterOptions" id="dateFilterOptions" [disabled]="!filterByDate" [(value)]="selected"
-            (selectionChange)="changeFilterOptions($event)">
-            <mat-option value="De/Até">De/Até</mat-option>
-            <mat-option value="De">De</mat-option>
-            <mat-option value="Até">Até</mat-option>
-        </mat-select>
-    </mat-form-field>
-    <div class="dateFilters" *ngIf="filterByDate">
+<div class="w-50 m-auto">
+    <form [formGroup]="documentoForm" class="d-flex flex-column m-auto">
+        <mat-checkbox name="filterByDate" id="filterByDate" color="primary" (input)="enableFilterByDate($event)">Filtrar
+            por
+            data?</mat-checkbox>
         <mat-form-field>
-            <mat-label>De</mat-label>
-            <input matInput type="date" name="fromDate" id="fromDate" formControlName="fromDateInput"
-                [(ngModel)]="fromDateDefaultValue">
+            <mat-select name="dateFilterOptions" id="dateFilterOptions" [disabled]="!filterByDate" [(value)]="selected"
+                (selectionChange)="changeFilterOptions($event)">
+                <mat-option value="De/Até">De/Até</mat-option>
+                <mat-option value="De">De</mat-option>
+                <mat-option value="Até">Até</mat-option>
+            </mat-select>
         </mat-form-field>
-        <mat-form-field>
-            <mat-label>Até</mat-label>
-            <input matInput type="date" name="toDate" id="toDate" formControlName="toDateInput"
-                [(ngModel)]="toDateDefaultValue">
+        <div class="mt-4 d-flex flex-row space-between mx-auto" *ngIf="filterByDate">
+            <div class="start-0">
+                <input type="date" name="fromDate" id="fromDate" formControlName="fromDateInput"
+                    [hidden]="typeofLimit==='Até'" [(ngModel)]="fromDateDefaultValue">
+
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="my-auto" width="16" height="16" fill="currentColor"
+                class="bi bi-arrow-right" viewBox="0 0 16 16" *ngIf="typeofLimit==='De/Até'">
+                <path fill-rule="evenodd"
+                    d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
+            </svg>
+            <div class="end-0">
+                <input type="date" name="toDate" id="toDate" formControlName="toDateInput" [hidden]="typeofLimit==='De'"
+                    [(ngModel)]="toDateDefaultValue">
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="mt-4">
+            <input type="text" matInput placeholder="Search" name="InputSearchString" id="InputSearchString"
+                formControlName="searchStringInput" class="formfieldsearch" auto>
+            <button type="submit" matSuffix mat-fab color="primary" class="btn-search mx-2" (click)="search()"
+                [disabled]="!documentoForm.valid">
+                <mat-icon>search</mat-icon>
+            </button>
         </mat-form-field>
-    </div>
 
-    <mat-form-field appearance="outline">
-        <input type="text" matInput placeholder="Search" name="InputSearchString" id="InputSearchString"
-            formControlName="searchStringInput" class="formfieldsearch" auto>
-        <button type="submit" matSuffix mat-fab color="primary" class="btn-search" (click)="search()" [disabled]="!documentoForm.valid">
-            <mat-icon>search</mat-icon>
-        </button>
-    </mat-form-field>
-
-</form>
-
-<div [hidden]="!afterSearch">
-    <h2>Documentos encontrados</h2>
-    <div *ngIf="emptyResponse">
-        <h4>Nenhum documento foi encontrado!</h4>
-        <h5 (click)="searchByDidYouMean()" *ngIf="possibleOptionFound">Você quis dizer "{{possibleOption}}"?</h5>
-    </div>
-    <mat-list>
-        <h4 mat-subheader>Mais relevantes</h4>
+    </form>
+</div>
+    <h4 mat-subheader *ngIf="emptyResponse" class="mt-3">Nenhum documento foi encontrado!</h4>
+    <h5 mat-subheader (click)="searchByDidYouMean()" *ngIf="possibleOptionFound">Você quis dizer "{{possibleOption}}"?</h5>
+<div *ngIf="afterSearch && !emptyResponse" class="mt-4">
+    <h4 mat-subheader>Mais relevantes</h4>
+    <mat-list class="d-flex flex-row flex-wrap justify-content-center">
         <div *ngFor="let documento of documentos">
-            <mat-list-item *ngIf="scoreProximiy(documento.score)>=85">
-                <div matListItemTitle> {{documento.cnpj}} {{documento.termos}}</div>
-                <div matListItemLine>{{documento.data | date:'longDate'}}</div>
-                <button mat-raised-button color="primary"(click)="checkLink(documento.local)">Acessar</button>
+            <mat-list-item *ngIf="scoreProximiy(documento.score)>=85" class="mb-2">
+                <div class="card mb-2" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{documento.cnpj}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{documento.data | date:'dd/MM/yyyy'}}</h6>
+                        <p class="card-text">{{documento.termos}}</p>
+                        <a [href]="'https://'+documento.local" target="_blank">{{documento.local}}</a>
+                        <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)" mattool
+                            [matTooltip]="documento.local">Acessar</button> -->
+                    </div>
+                </div>
+                <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)">Acessar</button> -->
             </mat-list-item>
         </div>
-        <mat-divider></mat-divider>
-        <h4 mat-subheader>Demais resultados</h4>
-        <div *ngFor="let documento of documentos">
-            <mat-list-item *ngIf="scoreProximiy(documento.score)<85">
-                <div matListItemTitle> {{documento.cnpj}} {{documento.termos}}</div>
-                <div matListItemLine>{{documento.data | date:'longDate'}}</div>
-                <button mat-raised-button color="primary"(click)="checkLink(documento.local)">Acessar</button>
+    </mat-list>
+    <mat-divider></mat-divider>
+    <h4 mat-subheader *ngIf="hasLessRelevant===true">Demais resultados</h4>
+    <mat-list class="d-flex flex-row flex-wrap justify-content-center">
+        <div *ngFor="let documento of documentos" class="">
+            <mat-list-item *ngIf="scoreProximiy(documento.score)<85" class="mb-2">
+                <div class="card mb-2" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{documento.cnpj}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{documento.data | date:'dd/MM/yyyy'}}</h6>
+                        <p class="card-text">{{documento.termos}}</p>
+                        <a [href]="'https://'+documento.local" target="_blank">{{documento.local}}</a>
+                        <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)"
+                            [matTooltip]="documento.local">Acessar</button> -->
+                    </div>
+                </div>
+                <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)">Acessar</button> -->
             </mat-list-item>
         </div>
     </mat-list>
     <h4 [hidden]="!noMoreResults">Não há mais resultados</h4>
 </div>
-<div [hidden]="!afterSearch || emptyResponse">
+<div [hidden]="!afterSearch || emptyResponse" class="mt-3">
     <p>Busque mais resultados de {{this.searchString}}</p>
-    <button type="submit" (click)="searchAfter()">Buscar</button>
+    <button mat-raised-button color="primary" type="submit" (click)="searchAfter()">Buscar</button>
 </div>

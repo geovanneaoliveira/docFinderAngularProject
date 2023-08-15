@@ -19,6 +19,7 @@ export class SearchScreenComponent {
   searchString: string;
   emptyResponse: boolean;
   noMoreResults: boolean;
+  hasLessRelevant = false;
   possibleOption: string;
   possibleOptionFound: boolean;
   toDateDefaultValue = new Date().toISOString().slice(0, 10);
@@ -147,6 +148,7 @@ export class SearchScreenComponent {
     this.noMoreResults = false;
     this.documentos = [];
     this.emptyResponse = false;
+    this.hasLessRelevant = false;
   }
 
   checkLink(local: string) {
@@ -164,7 +166,11 @@ export class SearchScreenComponent {
   }
 
   scoreProximiy(score: number) {
-    return (score/this.highestScore)*100;
+    let proximity = (score/this.highestScore)*100;
+    if(proximity<85) {
+      this.hasLessRelevant = true;
+    }
+    return proximity;
     // let color;
     // let result;
     // switch(true) {

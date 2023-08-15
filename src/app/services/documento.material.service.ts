@@ -7,8 +7,7 @@ import { from } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class DocumentoService {
-  
+export class DocumentoMaterialService {
 
   constructor(private http:HttpClient) { }
 
@@ -28,12 +27,27 @@ export class DocumentoService {
   }
 
   searchDateRange = (searchString:string, operator:string, fromDate:Date, toDate:Date, typeOfLimit:string) => {
+    let fromDateString;
+    let toDateString;
+    switch (typeOfLimit) {
+      case 'De/Até':
+        fromDateString = fromDate.toISOString().slice(0,10);
+        toDateString = toDate.toISOString().slice(0,10);
+        break;
+      case 'De':
+        fromDateString = fromDate.toISOString().slice(0,10);
+        break;
+      case 'Até':
+        toDateString = toDate.toISOString().slice(0,10);
+        break;
+    }
+
     let queryParams = new HttpParams();
     queryParams = queryParams.append("searchString", searchString)
                               .append("operator", operator)
                               .append("typeOfLimit", typeOfLimit)
-                              .append("fromDate", fromDate as unknown as string)
-                              .append("toDate", toDate as unknown as string);
+                              .append("fromDate", fromDateString as string)
+                              .append("toDate", toDateString as string);
     return this.http.get<Documento[]>('/getDocumentosSearchArrayDateRange', {params:queryParams});
   }
 
@@ -55,10 +69,8 @@ export class DocumentoService {
     return this.http.get<GenericResponse<string>>('/didYouMean', {params:queryparams});
   }
 
-  deletePitId(pitId: string) {
-    let queryparams = new HttpParams();
-    queryparams = queryparams.append("pitid", pitId);
-    return this.http.delete<boolean>("/deleTePitId", {params:queryparams});
+  generatePitId() {
+    // return this.http.post<String>("/pitId");
   }
   
 }

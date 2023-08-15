@@ -43,7 +43,7 @@
             </mat-list-item>
         </div>
         <mat-divider></mat-divider>
-        <h4 mat-subheader>Demais resultados</h4>
+        <h4 mat-subheader *ngIf="hasLessRelevant===true">Demais resultados</h4>
         <div *ngFor="let documento of documentos">
             <mat-list-item *ngIf="scoreProximiy(documento.score)<85">
                 <div matListItemTitle> {{documento.cnpj}} {{documento.termos}}</div>
