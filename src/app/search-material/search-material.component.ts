@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Documento } from '../types/types.module';
 import { DocumentoService } from '../services/documento.service';
+import * as chrono from 'chrono-node';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 
 @Component({
@@ -50,6 +51,16 @@ export class SearchMaterialComponent {
     this.resetParams();
     let values = this.documentoForm.value;
     this.searchString = values.searchStringInput!;
+    var input = values.searchStringInput!;
+    var results = chrono.parse(input);
+    results.forEach(result => {
+      console.log(result.date());
+      console.log(result.end?.date());
+      console.log(result.index);
+      console.log(result.refDate);
+      console.log(result.start);
+      console.log(result.text);
+    });
     this.afterSearch = true;
     if (this.filterByDate) {
       this.documentoService.searchDateRange(this.searchString, 'Or', values.fromDateInput!, values.toDateInput!, this.typeofLimit).subscribe(documentos => {

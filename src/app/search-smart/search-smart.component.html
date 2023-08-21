@@ -1,0 +1,59 @@
+<div class="w-50 m-auto">
+    <form [formGroup]="documentoForm" class="d-flex flex-column m-auto">
+        <mat-form-field appearance="outline" class="mt-4">
+            <input type="text" matInput placeholder="Search" name="InputSearchString" id="InputSearchString"
+                formControlName="searchStringInput" class="formfieldsearch" auto>
+            <button type="submit" matSuffix mat-fab color="primary" class="btn-search mx-2" (click)="search()"
+                [disabled]="!documentoForm.valid">
+                <mat-icon>search</mat-icon>
+            </button>
+        </mat-form-field>
+
+    </form>
+</div>
+<h4 mat-subheader *ngIf="emptyResponse" class="mt-3">Nenhum documento foi encontrado!</h4>
+<h5 mat-subheader (click)="searchByDidYouMean()" *ngIf="possibleOptionFound">Você quis dizer "{{possibleOption}}"?</h5>
+<div *ngIf="afterSearch && !emptyResponse" class="mt-4">
+    <h4 mat-subheader>Mais relevantes</h4>
+    <mat-list class="d-flex flex-row flex-wrap justify-content-center">
+        <div *ngFor="let documento of documentos">
+            <mat-list-item *ngIf="scoreProximiy(documento.score)>=85" class="mb-2">
+                <div class="card mb-2" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{documento.cnpj}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{documento.data | date:'dd/MM/yyyy'}}</h6>
+                        <p class="card-text">{{documento.termos}}</p>
+                        <a [href]="'https://'+documento.local" target="_blank">{{documento.local}}</a>
+                        <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)" mattool
+                            [matTooltip]="documento.local">Acessar</button> -->
+                    </div>
+                </div>
+                <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)">Acessar</button> -->
+            </mat-list-item>
+        </div>
+    </mat-list>
+    <mat-divider></mat-divider>
+    <h4 mat-subheader *ngIf="hasLessRelevant===true">Demais resultados</h4>
+    <mat-list class="d-flex flex-row flex-wrap justify-content-center">
+        <div *ngFor="let documento of documentos" class="">
+            <mat-list-item *ngIf="scoreProximiy(documento.score)<85" class="mb-2">
+                <div class="card mb-2" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{documento.cnpj}}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{documento.data | date:'dd/MM/yyyy'}}</h6>
+                        <p class="card-text">{{documento.termos}}</p>
+                        <a [href]="'https://'+documento.local" target="_blank">{{documento.local}}</a>
+                        <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)"
+                            [matTooltip]="documento.local">Acessar</button> -->
+                    </div>
+                </div>
+                <!-- <button mat-raised-button color="primary" (click)="checkLink(documento.local)">Acessar</button> -->
+            </mat-list-item>
+        </div>
+    </mat-list>
+    <h4 [hidden]="!noMoreResults">Não há mais resultados</h4>
+</div>
+<div [hidden]="!afterSearch || emptyResponse" class="mt-3">
+    <p>Busque mais resultados de {{this.searchString}}</p>
+    <button mat-raised-button color="primary" type="submit" (click)="searchAfter()">Buscar</button>
+</div>

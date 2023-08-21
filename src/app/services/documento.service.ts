@@ -37,6 +37,15 @@ export class DocumentoService {
     return this.http.get<Documento[]>('/getDocumentosSearchArrayDateRange', {params:queryParams});
   }
 
+  searchDateRangeSmart = (searchString:string, operator:string, greaterOrEqualTo:string, lowerThan:string) => {
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append("searchString", searchString)
+                              .append("operator", operator)
+                              .append("gte", greaterOrEqualTo)
+                              .append("lt", lowerThan);
+    return this.http.get<Documento[]>('/getDocumentosSmartSearch', {params:queryParams});
+  }
+
   searchDateRangeAfter(searchString:string, fromDate:Date, toDate:Date, operator:string, typeOfLimit:string, pitId:string,fieldValues:string) {
     let queryParams = new HttpParams();
     queryParams = queryParams.append("searchString", searchString)
@@ -47,6 +56,12 @@ export class DocumentoService {
                               .append("pitId", pitId)
                               .append("fieldValues",fieldValues);
     return this.http.get<Documento[]>('/getDocumentosSearchArrayDateRangeAfter', {params:queryParams});
+  }
+
+  searchSmart(searchString:string, operator:string) {
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append("searchString", searchString).append("operator", operator);
+    return this.http.get<Documento[]>('/getDocumentosSmartSearch', {params:queryParams});
   }
 
   didYouMean(searchString:string) {

@@ -26,6 +26,7 @@ import { registerLocaleData } from '@angular/common';
 import localePT from '@angular/common/locales/pt';
 import { MatButtonModule } from '@angular/material/button';
 import { FiltersComponent } from './filters/filters.component';
+import { SearchSmartComponent } from './search-smart/search-smart.component';
 registerLocaleData(localePT);
 
 @NgModule({
@@ -34,6 +35,7 @@ registerLocaleData(localePT);
     SearchScreenComponent,
     SearchMaterialComponent,
     FiltersComponent,
+    SearchSmartComponent,
 
   ],
   imports: [

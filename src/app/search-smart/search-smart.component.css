@@ -1,0 +1,30 @@
+.btn-search {
+    height: 40px;
+    width: 40px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+
+.example-container {
+    width: 500px;
+    height: 300px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+::ng-deep .mat-form-field-wrapper {
+    margin-bottom: -1.25em;
+}
+
+.mat-list-base.inline-list {
+    display: flex;
+}
+
+.mat-mdc-list-item {
+    width: fit-content!important;
+    height: fit-content!important;
+}
