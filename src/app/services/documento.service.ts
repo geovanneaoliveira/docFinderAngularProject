@@ -37,12 +37,12 @@ export class DocumentoService {
     return this.http.get<Documento[]>('/getDocumentosSearchArrayDateRange', {params:queryParams});
   }
 
-  searchDateRangeSmart = (searchString:string, operator:string, greaterOrEqualTo:string, lowerThan:string) => {
+  searchDateRangeSmart = (searchString:string, operator:string, gte:string, lt:string) => {
     let queryParams = new HttpParams();
     queryParams = queryParams.append("searchString", searchString)
                               .append("operator", operator)
-                              .append("gte", greaterOrEqualTo)
-                              .append("lt", lowerThan);
+                              .append("gte", gte)
+                              .append("lt", lt);
     return this.http.get<Documento[]>('/getDocumentosSmartSearch', {params:queryParams});
   }
 

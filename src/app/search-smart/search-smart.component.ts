@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { Documento } from '../types/types.module';
+import { DateRange, DictionaryLike, Documento, } from '../types/types.module';
 import { DocumentoService } from '../services/documento.service';
 import { FormBuilder, Validators } from '@angular/forms';
+import { MONTH_DICTIONARY } from '../constants';
 
 @Component({
   selector: 'app-search-smart',
@@ -21,11 +22,18 @@ export class SearchSmartComponent {
   possibleOptionFound: boolean;
   highestScore = 0;
   filterByDate = true;
+  dateRange: DateRange;
+  basicTimeFilters:string[];
   path = '';
 
   constructor(private documentoService: DocumentoService, private formBuilder: FormBuilder) {
 
     this.afterSearch = false;
+    this.dateRange = {
+      from: '1900-01-01',
+      to: 'now'
+    };
+    this.basicTimeFilters = [];
     this.emptyResponse = false;
     this.noMoreResults = false;
     this.searchString = "";
@@ -40,9 +48,11 @@ export class SearchSmartComponent {
     this.resetParams();
     this.afterSearch = true;
     this.searchString = this.documentoForm.value.searchStringInput as string;
-    let timeFilters = this.hasTimeFilters(this.searchString)!;
-    if(this.filterByDate) {
-      this.documentoService.searchDateRangeSmart(this.searchString, 'Or', timeFilters[0],timeFilters[1]).subscribe(documentos => {
+    this.basicTimeFilters = this.hasTimeFilters(this.searchString);
+    this.hasDateRange(this.searchString);
+    if (true) {
+      console.log('aq')
+      this.documentoService.searchDateRangeSmart(this.searchString, 'Or', this.dateRange.from, this.dateRange.to).subscribe(documentos => {
         if (documentos === null) {
           this.emptyResponse = true;
         } else {
@@ -81,6 +91,7 @@ export class SearchSmartComponent {
   }
 
   hasTimeFilters(searchString: string) {
+    this.hasDateRange(searchString);
     const regex = /(hoje|ontem|semana passada|m[êe]s passado|ano passado|esta semana|este m[êe]s|este ano)(?=\W|$)/i;
     switch (searchString.match(regex)?.[0]) {
       case "hoje":
@@ -100,11 +111,27 @@ export class SearchSmartComponent {
       case "este mês":
         return ['now/M', 'now+1M/M'];
       case "este ano":
-        return ['now/y','now+1y/y'];
+        return ['now/y', 'now+1y/y'];
       default:
-        this.filterByDate = false;
-        return null;
+        return [];
     }
+  }
+
+  hasDateRange(searchString: string) {
+    const regex = new RegExp(`(de|até|a|à) ${this.matchAnyPattern(MONTH_DICTIONARY)} de (19|20)\\d{2}`, 'gi');
+    let match = searchString.match(regex);
+    if (match?.length! > 0) {
+      match?.forEach(m => {
+        let separated = m.split(" ")!;
+        if (separated[0].toLowerCase() === "de") {
+          this.dateRange.from = separated[3]+'-'+MONTH_DICTIONARY[separated[1]]+'-'+'01';
+          // this.dateRange.from = new Date(separated[3] as unknown as number, MONTH_DICTIONARY[separated[1]], 1);
+        } else {
+          this.dateRange.to = separated[3]+'-'+MONTH_DICTIONARY[separated[1]]+'-'+'01';
+        }
+      });
+    }
+    console.log(this.dateRange);
   }
 
   didYouMean(searchString: string) {
@@ -122,6 +149,9 @@ export class SearchSmartComponent {
   }
 
   resetParams() {
+    this.basicTimeFilters = [];
+    this.dateRange.from = '1900-01-01';
+    this.dateRange.to = 'now';
     this.filterByDate = true;
     this.possibleOptionFound = false;
     this.hasLessRelevant = false;
@@ -154,5 +184,29 @@ export class SearchSmartComponent {
 
   ngOnDestroy() {
     this.documentoService.deletePitId(this.pitId);
+  }
+
+  extractTerms(dictionary: DictionaryLike): string[] {
+    let keys: string[];
+    if (dictionary instanceof Array) {
+      keys = [...dictionary];
+    } else if (dictionary instanceof Map) {
+      keys = Array.from((dictionary as Map<string, unknown>).keys());
+    } else {
+      keys = Object.keys(dictionary);
+    }
+
+    return keys;
+  }
+
+  matchAnyPattern(dictionary: DictionaryLike): string {
+    // TODO: More efficient regex pattern by considering duplicated prefix
+
+    const joinedTerms = this.extractTerms(dictionary)
+      .sort((a, b) => b.length - a.length)
+      .join("|")
+      .replace(/\./g, "\\.");
+
+    return `(${joinedTerms})`;
   }
 }
