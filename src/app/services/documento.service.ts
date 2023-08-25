@@ -46,22 +46,15 @@ export class DocumentoService {
     return this.http.get<Documento[]>('/getDocumentosSmartSearch', {params:queryParams});
   }
 
-  searchDateRangeAfter(searchString:string, fromDate:Date, toDate:Date, operator:string, typeOfLimit:string, pitId:string,fieldValues:string) {
+  searchDateRangeSmartAfter(searchString:string, operator:string, gte:string, lt:string, pitId:string,fieldValues:string) {
     let queryParams = new HttpParams();
     queryParams = queryParams.append("searchString", searchString)
-                              .append("fromDate", fromDate as unknown as string)
-                              .append("toDate", toDate as unknown as string)
                               .append("operator", operator)
-                              .append("typeOfLimit", typeOfLimit)
+                              .append("gte", gte)
+                              .append("lt", lt)
                               .append("pitId", pitId)
                               .append("fieldValues",fieldValues);
-    return this.http.get<Documento[]>('/getDocumentosSearchArrayDateRangeAfter', {params:queryParams});
-  }
-
-  searchSmart(searchString:string, operator:string) {
-    let queryParams = new HttpParams();
-    queryParams = queryParams.append("searchString", searchString).append("operator", operator);
-    return this.http.get<Documento[]>('/getDocumentosSmartSearch', {params:queryParams});
+    return this.http.get<Documento[]>('/getDocumentosSmartSearchAfter', {params:queryParams});
   }
 
   didYouMean(searchString:string) {

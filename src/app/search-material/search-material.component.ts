@@ -90,13 +90,13 @@ export class SearchMaterialComponent {
     let values = this.documentoForm.value;
     let lastDoc = this.documentos[this.documentos.length - 1];
     if (this.filterByDate === true) {
-      this.documentoService.searchDateRangeAfter(this.searchString, values.fromDateInput!, values.toDateInput!, 'Or', this.typeofLimit, lastDoc.pitId, lastDoc.sortValues).subscribe(nextDocs => {
-        if (nextDocs === null) {
-          this.noMoreResults = true;
-        } else {
-          this.documentos.push(...nextDocs);
-        }
-      });
+      // this.documentoService.searchDateRangeAfter(this.searchString, values.fromDateInput!, values.toDateInput!, 'Or', this.typeofLimit, lastDoc.pitId, lastDoc.sortValues).subscribe(nextDocs => {
+      //   if (nextDocs === null) {
+      //     this.noMoreResults = true;
+      //   } else {
+      //     this.documentos.push(...nextDocs);
+      //   }
+      // });
     } else {
       this.documentoService.searchAfter(this.searchString, 'Or', lastDoc.pitId, lastDoc.sortValues).subscribe(nextDocs => {
         if (nextDocs === null) {
