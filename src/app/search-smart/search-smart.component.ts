@@ -11,7 +11,7 @@ import { MONTH_DICTIONARY } from '../constants';
 })
 export class SearchSmartComponent {
   documentos: Documento[] = [];
-  pitId:string = '';
+  pitId: string = '';
   documentoForm;
   afterSearch: boolean = false;
   searchString: string = '';
@@ -23,13 +23,13 @@ export class SearchSmartComponent {
   highestScore = 0;
   filterByDate = true;
   dateRange: DateRange = {
-    from: '1900-01-01',
-    to: 'now'
+    from: '01/1/1900',
+    to: 'now+1d/d'
   };
   path = '';
   regexMatch: RegExpMatchArray = [''];
   basicFilterRegex = new RegExp('(hoje|ontem|semana passada|m[êe]s passado|ano passado|es[st]a semana|es[ts]e m[êe]s|este ano)(?=\\W|$)', 'i');
-  dateRangeRegex = new RegExp(`(de|at[ée]|a|à) ${this.matchAnyPattern(MONTH_DICTIONARY)} de (19|20)\\d{2}`, 'gi');
+  dateRangeRegex = new RegExp(`( de| at[ée]| a| à| em|-| ?) (${this.matchAnyPattern(MONTH_DICTIONARY)} de (19|20)\\d{2}|(0?[1-9]|[12][0-9]|3[01])[- /.](0?[1-9]|1[012])[- /.](19|20)\\d\\d)`, 'gi');
 
   constructor(private documentoService: DocumentoService, private formBuilder: FormBuilder) {
     this.documentoForm = formBuilder.group({
@@ -67,8 +67,10 @@ export class SearchSmartComponent {
   }
 
   searchAfter() {
+    console.log(this.filterByDate)
     let lastDoc = this.documentos[this.documentos.length - 1];
-    if(this.filterByDate) {
+    console.log(lastDoc)
+    if (this.filterByDate) {
       this.documentoService.searchDateRangeSmartAfter(this.searchString, 'Or', this.dateRange.from, this.dateRange.to, lastDoc.pitId, lastDoc.sortValues).subscribe(nextDocs => {
         if (nextDocs === null) {
           this.noMoreResults = true;
@@ -148,12 +150,41 @@ export class SearchSmartComponent {
 
   setDateRangeFilter(searchString: string) {
     searchString.match(this.dateRangeRegex)!.forEach(m => {
-      let separated = m.split(" ")!;
-      if (separated[0].toLowerCase() === "de") {
-        this.dateRange.from = separated[3] + '-' + MONTH_DICTIONARY[separated[1]] + '-' + '01';
-      } else {
-        this.dateRange.to = separated[3] + '-' + MONTH_DICTIONARY[separated[1]] + '-' + '01';
+      console.log(m)
+      let separated = m.split(" ").filter(v => v);
+      switch (separated.length) {
+        case 4:
+          if (separated[0].toLowerCase() === "em") {
+            this.dateRange.from = '01' + '/' + MONTH_DICTIONARY[separated[1]] + '/' + separated[3];
+            this.dateRange.to = '01' + '/' + MONTH_DICTIONARY[separated[1]] + '/' + separated[3] + '||+1M/d';
+          } else if (separated[0].toLowerCase() === "de") {
+            this.dateRange.from = '01' + '/' + MONTH_DICTIONARY[separated[1]] + '/' + separated[3];
+          } else {
+            this.dateRange.to = '01' + '/' + MONTH_DICTIONARY[separated[1]] + '/' + separated[3] + '||+1M/d';
+          }
+          break;
+        case 3:
+          this.dateRange.from = '01' + '/' + MONTH_DICTIONARY[separated[0]] + '/' + separated[2];
+          this.dateRange.to = '01' + '/' + MONTH_DICTIONARY[separated[0]] + '/' + separated[2] + '||+1M/d';
+          break;
+        case 2:
+          if (separated[0].toLowerCase() === "de") {
+            this.dateRange.from = separated[1];
+          } else if (separated[0].toLowerCase() === "em") {
+            this.dateRange.from = separated[1];
+            this.dateRange.to = separated[1] + '||+1d/d';
+          } else {
+            this.dateRange.to = separated[1] + '||+1d/d';
+          }
+          break;
+        case 1:
+          this.dateRange.from = separated[0];
+          this.dateRange.to = separated[0] + '||+1d/d';
+          break;
+        default:
+          break;
       }
+      console.log(separated);
     });
 
   }
@@ -173,8 +204,8 @@ export class SearchSmartComponent {
   }
 
   resetParams() {
-    this.dateRange.from = '1900-01-01';
-    this.dateRange.to = 'now';
+    this.dateRange.from = '01/1/1900';
+    this.dateRange.to = 'now+1d/d';
     this.filterByDate = true;
     this.possibleOptionFound = false;
     this.hasLessRelevant = false;
