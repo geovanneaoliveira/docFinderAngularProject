@@ -29,7 +29,7 @@ export class SearchSmartComponent {
   path = '';
   regexMatch: RegExpMatchArray = [''];
   basicFilterRegex = new RegExp('(hoje|ontem|semana passada|m[êe]s passado|ano passado|es[st]a semana|es[ts]e m[êe]s|este ano)(?=\\W|$)', 'i');
-  dateRangeRegex = new RegExp(`( de| at[ée]| a| à| em|-| ?) (${this.matchAnyPattern(MONTH_DICTIONARY)} de (19|20)\\d{2}|(0?[1-9]|[12][0-9]|3[01])[- /.](0?[1-9]|1[012])[- /.](19|20)\\d\\d)`, 'gi');
+  dateRangeRegex = new RegExp(`( de| at[ée]| a| à| em|-| ?) (${this.matchAnyPattern(MONTH_DICTIONARY)} de (19|20)\\d{2}|((0?[1-9]|[12][0-9]|3[01])[- /.])?(0?[1-9]|1[012])[- /.](19|20)\\d\\d)`, 'gi');
 
   constructor(private documentoService: DocumentoService, private formBuilder: FormBuilder) {
     this.documentoForm = formBuilder.group({
@@ -41,6 +41,7 @@ export class SearchSmartComponent {
     this.resetParams();
     this.afterSearch = true;
     this.searchString = this.documentoForm.value.searchStringInput as string;
+    this.searchString = this.searchString.replace(/\s{2,}/g, ' ');
     this.hasTimeFilters(this.searchString);
     if (this.filterByDate) {
       this.documentoService.searchDateRangeSmart(this.searchString, 'Or', this.dateRange.from, this.dateRange.to).subscribe(documentos => {
@@ -168,6 +169,9 @@ export class SearchSmartComponent {
           this.dateRange.to = '01' + '/' + MONTH_DICTIONARY[separated[0]] + '/' + separated[2] + '||+1M/d';
           break;
         case 2:
+          if(separated[1].length<=7){
+            separated[1] = '01/'+ separated[1];
+          }
           if (separated[0].toLowerCase() === "de") {
             this.dateRange.from = separated[1];
           } else if (separated[0].toLowerCase() === "em") {
@@ -178,6 +182,9 @@ export class SearchSmartComponent {
           }
           break;
         case 1:
+          if(separated[0].length<=7){
+            separated[0] = '01/'+ separated[0];
+          }
           this.dateRange.from = separated[0];
           this.dateRange.to = separated[0] + '||+1d/d';
           break;
